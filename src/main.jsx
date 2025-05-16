@@ -1,10 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import Popup from './Popup'
 import './index.css'
-import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// Make sure the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('root')
+  if (root) {
+    ReactDOM.createRoot(root).render(
+      <React.StrictMode>
+        <Popup />
+      </React.StrictMode>
+    )
+  } else {
+    // Log error to extension's error reporting system instead of console
+    chrome.runtime.sendMessage({
+      type: 'ERROR',
+      error: 'Root element not found in popup'
+    });
+  }
+})

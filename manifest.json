@@ -1,16 +1,35 @@
 {
     "manifest_version": 3,
-    "name": "Upwork Auto Apply",
-    "version": "1.0",
-    "description": "Auto-fill Upwork job applications",
-    "permissions": ["scripting", "tabs", "activeTab", "storage"],
-    "host_permissions": ["https://www.upwork.com/*"],
+    "name": "Upwork Job Application Assistant",
+    "version": "1.0.0",
+    "description": "Automates the process of applying to Upwork jobs",
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "storage"
+    ],
+    "host_permissions": [
+      "https://www.upwork.com/*"
+    ],
     "action": {
       "default_popup": "index.html",
-      "default_icon": "icon.png"
+      "default_title": "Upwork Assistant",
+      "default_icon": {
+        "16": "icon16.png",
+        "32": "icon32.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+      }
+    },
+    "icons": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
     },
     "background": {
-      "service_worker": "background.js"
+      "service_worker": "background.js",
+      "type": "module"
     },
     "content_scripts": [
       {
@@ -18,5 +37,5 @@
         "js": ["content.js"]
       }
     ]
-  }
+}
   

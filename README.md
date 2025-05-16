@@ -1,12 +1,98 @@
-# React + Vite
+# Upwork Job Application Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Firefox browser extension that automates the process of applying to Upwork jobs by auto-filling cover letters and answering common questions.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Automatically fills cover letters
+- Auto-fills common questions
+- Real-time status updates
+- Customizable responses based on job type
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Build the extension:
+```bash
+npm install
+npm run build
+```
+
+2. Load in Firefox:
+- Open Firefox
+- Go to `about:debugging#/runtime/this-firefox`
+- Click "Load Temporary Add-on"
+- Select `dist/manifest.json` from the build directory
+
+## Configuration
+
+### API Setup
+Replace the API endpoint in `src/background.js`:
+
+```javascript
+const API_ENDPOINT = 'YOUR_API_ENDPOINT_HERE';
+```
+
+The API should return data in this format:
+```json
+{
+  "coverLetter": "Your cover letter text...",
+  "questions": [
+    {
+      "question": "How many years of experience do you have?",
+      "answer": "Your answer..."
+    }
+  ]
+}
+```
+
+## Usage
+
+1. Navigate to an Upwork job posting
+2. Click the extension icon
+3. Click "Start Application"
+4. The extension will automatically:
+   - Fill the cover letter
+   - Answer matching questions
+
+## Development
+
+### Project Structure
+- `src/Popup.jsx`: Extension popup interface
+- `src/background.js`: Handles API communication
+- `src/content.js`: Handles form filling
+- `src/main.jsx`: Main entry point
+
+### Building
+```bash
+npm run build
+```
+
+### Testing
+1. Make sure your API endpoint is configured
+2. Load the extension in Firefox
+3. Navigate to an Upwork job posting
+4. Test the auto-fill functionality
+
+## Troubleshooting
+
+Common issues and solutions:
+1. If form fields aren't being filled:
+   - Check console for error messages
+   - Verify API response format
+   - Ensure you're on an Upwork job page
+
+2. If API connection fails:
+   - Verify API endpoint is correct
+   - Check network permissions in manifest.json
+
+## Security Notes
+
+- API keys should be stored securely
+- The extension only runs on Upwork.com domains
+- Form filling is limited to specific fields
+
+## Dependencies
+
+- React 18.2.0
+- Vite 4.4.5
+- Firefox Browser APIs
