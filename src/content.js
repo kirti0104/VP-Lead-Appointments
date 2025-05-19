@@ -1,4 +1,4 @@
-console.log('content script loaded');
+console.log('content script loaded on', window.location.href);
 
 // Debug function that only logs in development mode
 const debug = (message) => {
@@ -100,8 +100,8 @@ const fillApplicationForm = async (jobDetails) => {
   }
 };
 
-window.addEventListener('DOMContentLoaded', async () => {
-  console.log("DOM fully loaded");
+async function tryFill() {
+  console.log("tryFill called");
   if (window.location.href.includes('upwork.com/nx/proposals/job/')) {
     const { currentJobDetails } = await chrome.storage.local.get(['currentJobDetails']);
     if (currentJobDetails) {
@@ -112,7 +112,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       console.log('No currentJobDetails found');
     }
   }
-});
+}
+
+tryFill(); // Runs immediately
+window.addEventListener('DOMContentLoaded', tryFill); // Runs if DOMContentLoaded hasn't fired yet
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
