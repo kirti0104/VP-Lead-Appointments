@@ -1,5 +1,3 @@
-
-
 const debug = (message) => {
   if (process.env.NODE_ENV === 'development') {
     chrome.storage.local.get(['debug'], (result) => {
@@ -18,6 +16,8 @@ const debug = (message) => {
   }
 };
 
+// Debug logging
+debug('Background script loaded');
 
 const API_BASE_URL = 'YOUR_TEAMS_API_URL';
 
@@ -63,8 +63,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  if (request.type === 'APPLY_TO_JOBS') {
-    handleJobApplications(request.data, sendResponse);
+  if (request.type === 'GET_JOB_DETAILS') {
+    handleGetJobDetails(request.data, sendResponse);
     return true;
   }
 });
@@ -86,11 +86,21 @@ async function handleLogin(data, sendResponse) {
   }
 }
 
-// Handle job fetching
+// Update job fetching to get 10 newest jobs
 async function handleFetchJobs(data, sendResponse) {
   try {
-    const response = await apiCall('/jobs', 'GET', null, data.token);
+    const response = await apiCall('/jobs/newest?limit=10', 'GET', null, data.token);
     sendResponse({ success: true, jobs: response.jobs });
+  } catch (error) {
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+// Add new function to handle job details
+async function handleGetJobDetails(data, sendResponse) {
+  try {
+    const response = await apiCall(`/jobs/${data.jobId}`, 'GET', null, data.token);
+    sendResponse({ success: true, jobDetails: response });
   } catch (error) {
     sendResponse({ success: false, error: error.message });
   }

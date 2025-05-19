@@ -1,3 +1,5 @@
+console.log('content script loaded');
+
 // Debug function that only logs in development mode
 const debug = (message) => {
   if (process.env.NODE_ENV === 'development') {
@@ -59,20 +61,33 @@ const fillTextField = async (selector, text) => {
   }
 };
 
-// Fill the application form
-const fillApplicationForm = async (pitch) => {
+function setNativeValue(element, value) {
+  const valueSetter = Object.getOwnPropertyDescriptor(element.__proto__, 'value').set;
+  valueSetter.call(element, value);
+  element.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// Fill the application form with job details
+const fillApplicationForm = async (jobDetails) => {
   try {
-    // Wait for the cover letter field
-    const coverLetterField = await waitForElement('textarea[aria-label="Cover Letter"]');
+    console.log('Looking for cover letter field...');
+    let coverLetterField =
+      await waitForElement('textarea[aria-labelledby="cover_letter_label"]')
+      || await waitForElement('textarea[name="coverLetter"]')
+      || await waitForElement('textarea.air3-textarea.inner-textarea')
+      || await waitForElement('textarea');
+    console.log('Found cover letter field:', coverLetterField);
     if (coverLetterField) {
-      // Fill cover letter
-      await fillTextField('textarea[aria-label="Cover Letter"]', pitch);
+      setNativeValue(coverLetterField, jobDetails.pitch);
       
-      // Submit form if needed
-      const submitButton = document.querySelector('button[type="submit"]');
-      if (submitButton) {
-        // Uncomment the next line if you want to auto-submit
-        // submitButton.click();
+      // Fill dynamic questions if they exist
+      if (jobDetails.questions && jobDetails.questions.length > 0) {
+        for (const question of jobDetails.questions) {
+          const questionElement = await waitForElement(`[data-question-id="${question.id}"]`);
+          if (questionElement) {
+            await fillTextField(`[data-question-id="${question.id}"]`, question.answer);
+          }
+        }
       }
 
       return { success: true };
@@ -85,10 +100,24 @@ const fillApplicationForm = async (pitch) => {
   }
 };
 
+window.addEventListener('DOMContentLoaded', async () => {
+  console.log("DOM fully loaded");
+  if (window.location.href.includes('upwork.com/nx/proposals/job/')) {
+    const { currentJobDetails } = await chrome.storage.local.get(['currentJobDetails']);
+    if (currentJobDetails) {
+      console.log('Found currentJobDetails:', currentJobDetails);
+      await fillApplicationForm(currentJobDetails);
+      await chrome.storage.local.remove(['currentJobDetails']);
+    } else {
+      console.log('No currentJobDetails found');
+    }
+  }
+});
+
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'FILL_APPLICATION') {
-    fillApplicationForm(request.data.pitch)
+    fillApplicationForm(request.data)
       .then(sendResponse)
       .catch((error) => sendResponse({ success: false, error: error.message }));
     return true;

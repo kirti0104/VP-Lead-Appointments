@@ -31,11 +31,13 @@
       "service_worker": "background.js",
       "type": "module"
     },
-    "content_scripts": [
-      {
-        "matches": ["https://www.upwork.com/*"],
-        "js": ["content.js"]
-      }
-    ]
+ "content_scripts": [
+  {
+    "matches": ["*://www.upwork.com/nx/proposals/job/*"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }
+]
+
 }
   
