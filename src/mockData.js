@@ -8,7 +8,7 @@ export const mockJobs = [
   {
     id: '2',
     title: 'Full Stack Developer - Node.js & React',
-    url: 'https://www.example.com',
+    url: 'https://www.upwork.com/nx/proposals/job/~021924251168216481282/apply/',
     description: 'Need a full stack developer for building a web application'
   },
   {

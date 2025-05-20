@@ -21,28 +21,20 @@ const debug = (message) => {
 };
 
 // Function to wait for an element to appear on the page
-const waitForElement = (selector, timeout = 5000) => {
+const waitForElement = (selector, timeout = 10000) => {
   return new Promise((resolve, reject) => {
-    if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector));
-    }
+    const interval = 100;
+    let elapsed = 0;
 
-    const observer = new MutationObserver(() => {
-      if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector));
-        observer.disconnect();
-      }
-    });
+    const check = () => {
+      const el = document.querySelector(selector);
+      if (el) return resolve(el);
+      elapsed += interval;
+      if (elapsed >= timeout) return reject(`Timeout waiting for ${selector}`);
+      setTimeout(check, interval);
+    };
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    setTimeout(() => {
-      observer.disconnect();
-      reject(`Timeout waiting for ${selector}`);
-    }, timeout);
+    check();
   });
 };
 
@@ -62,20 +54,24 @@ const fillTextField = async (selector, text) => {
 };
 
 function setNativeValue(element, value) {
-  const valueSetter = Object.getOwnPropertyDescriptor(element.__proto__, 'value').set;
-  valueSetter.call(element, value);
+  const lastValue = element.value;
+  element.value = value;
+
+  const tracker = element._valueTracker;
+  if (tracker) {
+    tracker.setValue(lastValue);
+  }
+
   element.dispatchEvent(new Event('input', { bubbles: true }));
 }
+
 
 // Fill the application form with job details
 const fillApplicationForm = async (jobDetails) => {
   try {
     console.log('Looking for cover letter field...');
-    let coverLetterField =
-      await waitForElement('textarea[aria-labelledby="cover_letter_label"]')
-      || await waitForElement('textarea[name="coverLetter"]')
-      || await waitForElement('textarea.air3-textarea.inner-textarea')
-      || await waitForElement('textarea');
+   const coverLetterField = await waitForElement('textarea[name="coverLetter"], textarea[aria-labelledby="cover_letter_label"], textarea.air3-textarea');
+
     console.log('Found cover letter field:', coverLetterField);
     if (coverLetterField) {
       setNativeValue(coverLetterField, jobDetails.pitch);
@@ -114,8 +110,15 @@ async function tryFill() {
   }
 }
 
-tryFill(); // Runs immediately
-window.addEventListener('DOMContentLoaded', tryFill); // Runs if DOMContentLoaded hasn't fired yet
+document.onreadystatechange = function () {
+  if (document.readyState === "complete") {
+    tryFill();
+  }
+};
+
+setTimeout(tryFill, 3000); // as a fallback if all else fails
+
+window.addEventListener('DOMContentLoaded', tryFill); 
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
