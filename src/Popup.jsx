@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import toast, { Toaster } from 'react-hot-toast';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+
 
 
 const Popup = () => {
@@ -14,7 +16,7 @@ const Popup = () => {
       setStatus('Fetching jobs...');
       setIsProcessing(true);
       try {
-        const response = await fetch('http://localhost:4055/api/v1/users-with-pitches');
+        const response = await fetch('http://44.211.113.36:4055/api/v1/users-with-pitches');
         const data = await response.json();
         setJobs(data.data); // data.data is the array of jobs
         setStatus(`Found ${data.data.length} jobs`);
@@ -33,15 +35,14 @@ const Popup = () => {
       setStatus('Loading job details...');
       setIsProcessing(true);
 
-      // Get the first pitch (or however you want to select)
       const pitch = job.userPitches && job.userPitches.length > 0
         ? job.userPitches[0].pitchText
         : '';
 
-      // Prepare the object for the content script
+      
       const jobDetails = {
         pitch,
-        // Add more fields if needed for dynamic questions
+       
       };
 
       await chrome.storage.local.set({ currentJobDetails: jobDetails });
@@ -79,9 +80,11 @@ const Popup = () => {
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 Latest Jobs ({jobs.length})
               </h3>
-              <div className="max-h-[300px] overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-200">
+              <div className=" max-h-[300px] overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-200">
                 {jobs.map((job) => (
-                  <div
+                  <>
+                 <div className='flex items-center justify-between '>
+                 <div
                     key={job.jobPostId}
                     onClick={() => handleJobClick(job)}
                     className="p-4 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
@@ -89,6 +92,19 @@ const Popup = () => {
                     <h4 className="font-medium text-gray-900">{job.jobTitle}</h4>
                     {/* <p className="text-sm text-gray-600 mt-1">{job.jobDescription}</p> */}
                   </div>
+                  <a
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Browse Job"
+                onClick={()=> handleJobClick(job)}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700"
+              >
+                <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+                </a>
+                 </div>
+                 
+
+                 </>
                 ))}
               </div>
             </div>
